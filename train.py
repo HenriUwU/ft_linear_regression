@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from colorama import Fore, Style
 
-max_epochs = 50000
+max_epochs = 15000
 learning_rate = 0.01
 
 
@@ -72,14 +72,15 @@ def main(path: str) -> None:
             theta0 = theta0 - tmp_theta0
             theta1 = theta1 - tmp_theta1
 
-        print('final Theta 0 : ', theta0)
-        print('final Theta 1 : ', theta1)
-
         theta1 = theta1 * (delta_y / delta_x)
         theta0 = min(price) + (delta_y * theta0) - (theta1 * min(mileage))
 
-        print('final Theta 0 unnormalized : ', theta0)
-        print('final Theta 1 unnormalized : ', theta1)
+        np.savez("thetas.npz", theta0=theta0, theta1=theta1)
+
+        print(f"{Fore.GREEN}"
+              f"Training file saved as thetas.npz"
+              f"{Style.RESET_ALL}")
+
     except Exception as e:
         print(f"{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")
 
