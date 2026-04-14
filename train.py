@@ -1,11 +1,18 @@
 import argparse
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from colorama import Fore, Style
 
 max_epochs = 15000
 learning_rate = 0.01
+
+
+# plot les points et la droite
+# early stop
+# ols
+#
 
 
 def normalize_data(array: np.ndarray, delta: float) -> np.ndarray:
@@ -28,18 +35,44 @@ def normalize_data(array: np.ndarray, delta: float) -> np.ndarray:
     return (array - min(array)) / delta
 
 
-def estimate_price(mileage: np.ndarray, theta0: float, theta1: float) -> np.ndarray:
+def estimate_price(mileage, theta0: float, theta1: float) -> np.ndarray:
     """
     This function estimates the price of our vehicle using this given formula :
 
     estimatePrice(mileage) = theta0 + (theta1 * mileage)
 
     :param mileage: the given mileage
-    :param theta0:
-    :param theta1:
-    :return: the estimated price
+    :param theta0: our theta 0
+    :param theta1: our theta 1
+    :return: the estimated price for a given mileage
     """
     return theta0 + (theta1 * mileage)
+
+
+def plot(dataFrame, theta0, theta1) -> None:
+    """
+    This function plots the price of the car depending on the mileage.
+
+    In addition to that, we plot a line representing our model,
+    using the estimated price after the training is done.
+
+    :param dataFrame: the dataFrame
+    :param theta0: the unnormalized theta0
+    :param theta1: the unnormalized theta1
+    :return: Nothing
+    """
+
+    plt.scatter(x=dataFrame["km"], y=dataFrame["price"], color="blue")
+    plt.xlabel("Mileage")
+    plt.ylabel("Price",
+               rotation=0,
+               labelpad=15,
+               ha='right',
+               va='center')
+
+    plt.plot(dataFrame["km"], estimate_price(dataFrame["km"], theta0, theta1), color="red")
+
+    plt.show()
 
 
 def main(path: str) -> None:
@@ -75,6 +108,7 @@ def main(path: str) -> None:
         theta1 = theta1 * (delta_y / delta_x)
         theta0 = min(price) + (delta_y * theta0) - (theta1 * min(mileage))
 
+        plot(df, theta0, theta1)
         np.savez("thetas.npz", theta0=theta0, theta1=theta1)
 
         print(f"{Fore.GREEN}"

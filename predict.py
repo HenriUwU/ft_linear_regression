@@ -1,19 +1,7 @@
 import numpy as np
 from colorama import Fore, Style
 
-
-def estimate_price(mileage: int, theta0: float, theta1: float) -> float:
-    """
-    This function estimates the price of our vehicle using this given formula :
-
-    estimatePrice(mileage) = theta0 + (theta1 * mileage)
-
-    :param mileage: the given mileage
-    :param theta1:
-    :param theta0:
-    :return: the estimated price
-    """
-    return theta0 + (theta1 * mileage)
+from train import estimate_price
 
 
 def main() -> None:
@@ -36,6 +24,7 @@ def main() -> None:
 
     except Exception as e:
         print(f"{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")
+
 
 if __name__ == "__main__":
     main()
