@@ -80,7 +80,7 @@ def plot(dataFrame, theta0, theta1) -> None:
     plt.show()
 
 
-def main(path: str) -> None:
+def main(path: str, display_plot) -> None:
     try:
         df = pd.read_csv(path)
 
@@ -96,7 +96,7 @@ def main(path: str) -> None:
 
         theta0 = 0.0
         theta1 = 0.0
-        tolerance = 1e-6
+        tolerance = 1e-7
 
         for epoch in range(max_epochs):
             estimated_price = estimate_price(normalized_mileage,
@@ -127,7 +127,9 @@ def main(path: str) -> None:
         theta1 = theta1 * (delta_y / delta_x)
         theta0 = min(price) + (delta_y * theta0) - (theta1 * min(mileage))
 
-        plot(df, theta0, theta1)
+        if display_plot:
+            plot(df, theta0, theta1)
+        
         np.savez("thetas.npz", theta0=theta0, theta1=theta1)
 
         print(f"{Fore.GREEN}"
@@ -147,8 +149,12 @@ if __name__ == "__main__":
                         type=str,
                         help="Path to the CSV file (dataset)")
 
+    parser.add_argument("--plot",
+                        action="store_true",
+                        help="Display plot (if present, will display the plot)")
+
     # Parse the arguments
     args = parser.parse_args()
 
     # Call main function with given arguments
-    main(args.path)
+    main(args.path, args.plot)
