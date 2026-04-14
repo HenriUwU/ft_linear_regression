@@ -16,11 +16,15 @@ def main() -> None:
         estimated_price = estimate_price(int(mileage), theta0, theta1)
 
         if estimated_price > 0:
-            print(f"{Fore.GREEN}Estimated Price : {estimated_price}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}Estimated Price :"
+                  f"{estimated_price}{Style.RESET_ALL}")
         else:
-            print(f"{Fore.GREEN}Unfortunately it seems like you drove way too far,"
-                  f"the estimated price is : {Fore.RED} {estimated_price} {Fore.GREEN},"
-                  f"but realistically your vehicle actually is worth nothing. {Style.RESET_ALL}")
+            print(f"{Fore.GREEN}Unfortunately it seems like"
+                  f"you drove way too far,"
+                  f"the estimated price is :"
+                  f"{Fore.RED} {estimated_price} {Fore.GREEN},"
+                  f"but realistically your vehicle"
+                  f"actually is worth nothing. {Style.RESET_ALL}")
 
     except Exception as e:
         print(f"{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")

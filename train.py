@@ -5,13 +5,12 @@ import numpy as np
 import pandas as pd
 from colorama import Fore, Style
 
-max_epochs = 15000
+max_epochs = 150000000000
 learning_rate = 0.01
 
 
-# plot les points et la droite
-# early stop
-# ols
+# plot les points et la droite ✅
+# early stop ✅
 #
 
 
@@ -62,7 +61,11 @@ def plot(dataFrame, theta0, theta1) -> None:
     :return: Nothing
     """
 
-    plt.scatter(x=dataFrame["km"], y=dataFrame["price"], color="blue")
+    mileage = dataFrame["km"]
+    price = dataFrame["price"]
+
+    plt.scatter(x=mileage, y=price, color="blue")
+
     plt.xlabel("Mileage")
     plt.ylabel("Price",
                rotation=0,
@@ -70,7 +73,9 @@ def plot(dataFrame, theta0, theta1) -> None:
                ha='right',
                va='center')
 
-    plt.plot(dataFrame["km"], estimate_price(dataFrame["km"], theta0, theta1), color="red")
+    plt.plot(mileage,
+             estimate_price(mileage, theta0, theta1),
+             color="red")
 
     plt.show()
 
@@ -91,9 +96,12 @@ def main(path: str) -> None:
 
         theta0 = 0.0
         theta1 = 0.0
+        tolerance = 1e-6
 
         for epoch in range(max_epochs):
-            estimated_price = estimate_price(normalized_mileage, theta0, theta1)
+            estimated_price = estimate_price(normalized_mileage,
+                                             theta0,
+                                             theta1)
 
             tmp_theta0 = learning_rate * (1 / data_count) * np.sum(
                 estimated_price - normalized_price
@@ -102,8 +110,19 @@ def main(path: str) -> None:
                 (estimated_price - normalized_price) * normalized_mileage
             )
 
-            theta0 = theta0 - tmp_theta0
-            theta1 = theta1 - tmp_theta1
+            new_tetha0 = theta0 - tmp_theta0
+            new_tetha1 = theta1 - tmp_theta1
+
+            if (epoch > 0
+                    and np.abs(theta0 - new_tetha0) < tolerance
+                    or np.abs(theta1 - new_tetha1) < tolerance):
+                print(f"{Fore.GREEN}"
+                      f"Early stopped at epoch {epoch}"
+                      f"{Style.RESET_ALL}")
+                break
+
+            theta0 = new_tetha0
+            theta1 = new_tetha1
 
         theta1 = theta1 * (delta_y / delta_x)
         theta0 = min(price) + (delta_y * theta0) - (theta1 * min(mileage))
@@ -124,7 +143,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Mandatory CSV file argument
-    parser.add_argument("path", type=str, help="Path to the CSV file (dataset)")
+    parser.add_argument("path",
+                        type=str,
+                        help="Path to the CSV file (dataset)")
 
     # Parse the arguments
     args = parser.parse_args()
