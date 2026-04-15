@@ -89,7 +89,7 @@ def main(path: str, line, learning) -> None:
             plot_learning_curve(cost_history)
 
         # Compute the RMSE for precision
-        print(f"{Fore.YELLOW}RMSE :"
+        print(f"{Fore.CYAN}root-mean-squared error (RMSE) : "
               f"{compute_rmse(df, theta0, theta1)}{Style.RESET_ALL}")
 
     except Exception as e:
