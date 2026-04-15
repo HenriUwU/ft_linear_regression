@@ -19,11 +19,11 @@ def main() -> None:
             print(f"{Fore.GREEN}Estimated Price :"
                   f"{estimated_price}{Style.RESET_ALL}")
         else:
-            print(f"{Fore.GREEN}Unfortunately it seems like"
-                  f"you drove way too far,"
-                  f"the estimated price is :"
+            print(f"{Fore.GREEN}Unfortunately it seems like "
+                  f"you drove way too far, "
+                  f"the estimated price is : "
                   f"{Fore.RED} {estimated_price} {Fore.GREEN},"
-                  f"but realistically your vehicle"
+                  f"but realistically your vehicle "
                   f"actually is worth nothing. {Style.RESET_ALL}")
 
     except Exception as e:

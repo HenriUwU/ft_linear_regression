@@ -9,13 +9,6 @@ max_epochs = 150000000000
 learning_rate = 0.01
 
 
-# plot les points et la droite ✅
-# early stop ✅
-# programme pour calculer la précision ✅
-# plot la courbe d'apprentissage ✅
-#
-
-
 def normalize_data(array: np.ndarray, delta: float) -> np.ndarray:
     """
     This function takes an n-dimensional numpy array as an input
@@ -50,7 +43,7 @@ def estimate_price(mileage, theta0: float, theta1: float) -> np.ndarray:
     return theta0 + (theta1 * mileage)
 
 
-def plot_line(dataFrame, theta0, theta1) -> None:
+def plot_line(dataFrame: pd.DataFrame, theta0, theta1) -> None:
     """
     This function plots the price of the car depending on the mileage.
 
@@ -83,9 +76,11 @@ def plot_line(dataFrame, theta0, theta1) -> None:
 
 def plot_learning_curve(cost_history) -> None:
     """
+    This function plots the learning curve of our model.
+    It represents the loss over the epochs.
 
-    :param cost_history:
-    :return:
+    :param cost_history: the history of loss over all epochs during training
+    :return: Nothing
     """
     plt.figure()
     plt.plot(cost_history, color="blue")
@@ -102,11 +97,12 @@ def plot_learning_curve(cost_history) -> None:
 
 def compute_rmse(dataFrame, theta0, theta1):
     """
+    This functions computes the RMSE (root-mean-square error)
 
-    :param dataFrame:
-    :param theta0:
-    :param theta1:
-    :return:
+    :param dataFrame: the original dataFrame
+    :param theta0: the final theta 0
+    :param theta1: the final theta 1
+    :return: the computed root-mean-square error
     """
     mileage = dataFrame["km"].to_numpy()
     price = dataFrame["price"].to_numpy()
@@ -117,7 +113,8 @@ def compute_rmse(dataFrame, theta0, theta1):
     return np.sqrt(np.sum((estimated_price - price) ** 2 / data_count))
 
 
-def compute_loss(estimated_price: np.ndarray, normalized_price: np.ndarray):
+def compute_loss(estimated_price: np.ndarray,
+                 normalized_price: np.ndarray) -> float:
     """
     This functions computes the loss of our model using the loss function.
 
@@ -139,8 +136,8 @@ def main(path: str, line, learning) -> None:
         price = df["price"].to_numpy()
         data_count = mileage.shape[0]
 
-        delta_x = max(mileage) - min(mileage)
-        delta_y = max(price) - min(price)
+        delta_x = float(np.max(mileage)) - float(np.min(mileage))
+        delta_y = float(np.max(price)) - float(np.min(price))
 
         normalized_mileage = normalize_data(mileage, delta_x)
         normalized_price = normalize_data(price, delta_y)
@@ -151,46 +148,60 @@ def main(path: str, line, learning) -> None:
         cost_history = []
 
         for epoch in range(max_epochs):
+            # Estimate the price using current theta values
             estimated_price = estimate_price(normalized_mileage,
                                              theta0,
                                              theta1)
 
-            cost_history.append(compute_loss(estimated_price, normalized_price))
+            # Save the loss in the history
+            cost_history.append(
+                compute_loss(estimated_price, normalized_price)
+            )
 
+            # Compute tmp_theta0 using the given formula
             tmp_theta0 = learning_rate * (1 / data_count) * np.sum(
                 estimated_price - normalized_price
             )
+            # Compute tmp_theta1 using the given formula
             tmp_theta1 = learning_rate * (1 / data_count) * np.sum(
                 (estimated_price - normalized_price) * normalized_mileage
             )
 
-            new_tetha0 = theta0 - tmp_theta0
-            new_tetha1 = theta1 - tmp_theta1
+            # Perform gradient descent
+            new_theta0 = theta0 - tmp_theta0
+            new_theta1 = theta1 - tmp_theta1
 
+            # Verify if we learned enough, if not -> early stop
             if (epoch > 0
-                    and np.abs(theta0 - new_tetha0) < tolerance
-                    and np.abs(theta1 - new_tetha1) < tolerance):
-                print(f"{Fore.RED}"
-                      f"Early stopped at epoch {epoch}"
+                    and np.abs(theta0 - new_theta0) < tolerance
+                    and np.abs(theta1 - new_theta1) < tolerance):
+                print(f"{Fore.CYAN}"
+                      f"Early stop at epoch {epoch}"
                       f"{Style.RESET_ALL}")
                 break
 
-            theta0 = new_tetha0
-            theta1 = new_tetha1
+            # Update both theta values
+            theta0 = new_theta0
+            theta1 = new_theta1
 
-        # Unnormalize the tethas before saving them
+        # Unnormalize the thetas before saving them
         theta1 = theta1 * (delta_y / delta_x)
-        theta0 = min(price) + (delta_y * theta0) - (theta1 * min(mileage))
+        theta0 = (float(np.min(price))
+                  + (delta_y * theta0)
+                  - (theta1 * float(np.min(mileage))))
 
         # Save the thetas
         np.savez("thetas.npz", theta0=theta0, theta1=theta1)
 
+        # Plot the line of our model
         if line:
             plot_line(df, theta0, theta1)
 
+        # Plot the learning curve of our model
         if learning:
             plot_learning_curve(cost_history)
 
+        # Compute the RMSE for precision
         print(f"{Fore.YELLOW}RMSE :"
               f"{compute_rmse(df, theta0, theta1)}{Style.RESET_ALL}")
 
@@ -210,12 +221,12 @@ if __name__ == "__main__":
     # Optional "plot" argument to display the plot
     parser.add_argument("--line",
                         action="store_true",
-                        help="Display plot (if present, will display the plot)")
+                        help="Display the line of the model")
 
     # Optional "learning" argument to display a plot of the learning curve
     parser.add_argument("--learning",
                         action="store_true",
-                        help="Display a plot representing the learning curve of the model")
+                        help="Display the learning curve of the model")
 
     # Parse the arguments
     args = parser.parse_args()
