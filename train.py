@@ -11,6 +11,8 @@ learning_rate = 0.01
 
 # plot les points et la droite ✅
 # early stop ✅
+# programme pour calculer la précision ✅
+# plot la courbe d'apprentissage ✅
 #
 
 
@@ -48,7 +50,7 @@ def estimate_price(mileage, theta0: float, theta1: float) -> np.ndarray:
     return theta0 + (theta1 * mileage)
 
 
-def plot(dataFrame, theta0, theta1) -> None:
+def plot_line(dataFrame, theta0, theta1) -> None:
     """
     This function plots the price of the car depending on the mileage.
 
@@ -60,7 +62,6 @@ def plot(dataFrame, theta0, theta1) -> None:
     :param theta1: the unnormalized theta1
     :return: Nothing
     """
-
     mileage = dataFrame["km"]
     price = dataFrame["price"]
 
@@ -80,7 +81,57 @@ def plot(dataFrame, theta0, theta1) -> None:
     plt.show()
 
 
-def main(path: str, display_plot) -> None:
+def plot_learning_curve(cost_history) -> None:
+    """
+
+    :param cost_history:
+    :return:
+    """
+    plt.figure()
+    plt.plot(cost_history, color="blue")
+
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss",
+               rotation=0,
+               labelpad=15,
+               ha='right',
+               va='center')
+
+    plt.show()
+
+
+def compute_rmse(dataFrame, theta0, theta1):
+    """
+
+    :param dataFrame:
+    :param theta0:
+    :param theta1:
+    :return:
+    """
+    mileage = dataFrame["km"].to_numpy()
+    price = dataFrame["price"].to_numpy()
+    data_count = mileage.shape[0]
+
+    estimated_price = estimate_price(mileage, theta0, theta1)
+
+    return np.sqrt(np.sum((estimated_price - price) ** 2 / data_count))
+
+
+def compute_loss(estimated_price: np.ndarray, normalized_price: np.ndarray):
+    """
+    This functions computes the loss of our model using the loss function.
+
+    :param estimated_price: the estimated price made by the model (normalized)
+    :param normalized_price: the original price (normalized)
+    :return: the loss of the model
+    """
+    m = estimated_price.shape[0]
+
+    return ((1 / (2 * m))
+            * (np.sum((estimated_price - normalized_price) ** 2)))
+
+
+def main(path: str, line, learning) -> None:
     try:
         df = pd.read_csv(path)
 
@@ -96,12 +147,15 @@ def main(path: str, display_plot) -> None:
 
         theta0 = 0.0
         theta1 = 0.0
-        tolerance = 1e-7
+        tolerance = 1e-5
+        cost_history = []
 
         for epoch in range(max_epochs):
             estimated_price = estimate_price(normalized_mileage,
                                              theta0,
                                              theta1)
+
+            cost_history.append(compute_loss(estimated_price, normalized_price))
 
             tmp_theta0 = learning_rate * (1 / data_count) * np.sum(
                 estimated_price - normalized_price
@@ -115,8 +169,8 @@ def main(path: str, display_plot) -> None:
 
             if (epoch > 0
                     and np.abs(theta0 - new_tetha0) < tolerance
-                    or np.abs(theta1 - new_tetha1) < tolerance):
-                print(f"{Fore.GREEN}"
+                    and np.abs(theta1 - new_tetha1) < tolerance):
+                print(f"{Fore.RED}"
                       f"Early stopped at epoch {epoch}"
                       f"{Style.RESET_ALL}")
                 break
@@ -124,17 +178,21 @@ def main(path: str, display_plot) -> None:
             theta0 = new_tetha0
             theta1 = new_tetha1
 
+        # Unnormalize the tethas before saving them
         theta1 = theta1 * (delta_y / delta_x)
         theta0 = min(price) + (delta_y * theta0) - (theta1 * min(mileage))
 
-        if display_plot:
-            plot(df, theta0, theta1)
-        
+        # Save the thetas
         np.savez("thetas.npz", theta0=theta0, theta1=theta1)
 
-        print(f"{Fore.GREEN}"
-              f"Training file saved as thetas.npz"
-              f"{Style.RESET_ALL}")
+        if line:
+            plot_line(df, theta0, theta1)
+
+        if learning:
+            plot_learning_curve(cost_history)
+
+        print(f"{Fore.YELLOW}RMSE :"
+              f"{compute_rmse(df, theta0, theta1)}{Style.RESET_ALL}")
 
     except Exception as e:
         print(f"{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")
@@ -149,12 +207,18 @@ if __name__ == "__main__":
                         type=str,
                         help="Path to the CSV file (dataset)")
 
-    parser.add_argument("--plot",
+    # Optional "plot" argument to display the plot
+    parser.add_argument("--line",
                         action="store_true",
                         help="Display plot (if present, will display the plot)")
+
+    # Optional "learning" argument to display a plot of the learning curve
+    parser.add_argument("--learning",
+                        action="store_true",
+                        help="Display a plot representing the learning curve of the model")
 
     # Parse the arguments
     args = parser.parse_args()
 
     # Call main function with given arguments
-    main(args.path, args.plot)
+    main(args.path, args.line, args.learning)
