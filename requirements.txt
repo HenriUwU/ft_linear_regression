@@ -2,3 +2,4 @@ colorama
 pandas
 numpy
 matplotlib
+pandas-stubs
