@@ -91,7 +91,7 @@ def plot_learning_curve(cost_history) -> None:
 
 def compute_rmse(dataFrame, theta0, theta1):
     """
-    This functions computes the RMSE (root-mean-square error)
+    This function computes the RMSE (root-mean-square error)
 
     :param dataFrame: the original dataFrame
     :param theta0: the final theta 0
@@ -110,7 +110,7 @@ def compute_rmse(dataFrame, theta0, theta1):
 def compute_loss(estimated_price: np.ndarray,
                  normalized_price: np.ndarray) -> float:
     """
-    This functions computes the loss of our model using the loss function.
+    This function computes the loss of our model using the loss function.
 
     :param estimated_price: the estimated price made by the model (normalized)
     :param normalized_price: the original price (normalized)
@@ -120,3 +120,29 @@ def compute_loss(estimated_price: np.ndarray,
 
     return ((1 / (2 * m))
             * (np.sum((estimated_price - normalized_price) ** 2)))
+
+
+def compute_coefficient_of_determination(dataFrame: pd.DataFrame, theta0, theta1) -> float:
+    """
+    This function computes the coefficient of determination of the model.
+
+    :param dataFrame: the original dataFrame
+    :param theta0: the unnormalized theta 0
+    :param theta1: the unnormalized theta 1
+    :return: the coefficient R²
+    """
+
+    mileage = dataFrame["km"].to_numpy()
+    price = dataFrame["price"].to_numpy()
+
+    estimated_price = estimate_price(mileage, theta0, theta1)
+
+    # Compute the error of my model
+    RSS = np.sum((estimated_price - price)**2)
+
+    # Compute the error of an "idiot" model
+    # (a model using the mean price to make its predictions)
+    TSS = np.sum((np.mean(price) - price)**2)
+
+    # Compute and return the coefficient R²
+    return 1 - (float(RSS) / float(TSS))

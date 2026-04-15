@@ -9,7 +9,8 @@ from utils import (normalize_data,
                    compute_loss,
                    plot_line,
                    plot_learning_curve,
-                   compute_rmse)
+                   compute_rmse,
+                   compute_coefficient_of_determination)
 
 max_epochs = 9999999
 learning_rate = 0.01
@@ -88,9 +89,15 @@ def main(path: str, line, learning) -> None:
         if learning:
             plot_learning_curve(cost_history)
 
-        # Compute the RMSE for precision
+        # Compute and print the RMSE for precision
         print(f"{Fore.CYAN}root-mean-squared error (RMSE) : "
-              f"{compute_rmse(df, theta0, theta1)}{Style.RESET_ALL}")
+              f"{compute_rmse(df, theta0, theta1)}"
+              f"{Style.RESET_ALL}")
+
+        # Compute and print the R² for precision
+        print(f"{Fore.CYAN}Coefficient of determination (R²) : "
+              f"{compute_coefficient_of_determination(df, theta0, theta1)}"
+              f"{Style.RESET_ALL}")
 
     except Exception as e:
         print(f"{Fore.RED}An error occurred: {e}{Style.RESET_ALL}")
