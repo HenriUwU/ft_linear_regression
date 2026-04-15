@@ -122,7 +122,8 @@ def compute_loss(estimated_price: np.ndarray,
             * (np.sum((estimated_price - normalized_price) ** 2)))
 
 
-def compute_coefficient_of_determination(dataFrame: pd.DataFrame, theta0, theta1) -> float:
+def compute_coefficient_of_determination(dataFrame: pd.DataFrame,
+                                         theta0, theta1) -> float:
     """
     This function computes the coefficient of determination of the model.
 
@@ -138,11 +139,11 @@ def compute_coefficient_of_determination(dataFrame: pd.DataFrame, theta0, theta1
     estimated_price = estimate_price(mileage, theta0, theta1)
 
     # Compute the error of my model
-    RSS = np.sum((estimated_price - price)**2)
+    RSS = np.sum((estimated_price - price) ** 2)
 
     # Compute the error of an "idiot" model
     # (a model using the mean price to make its predictions)
-    TSS = np.sum((np.mean(price) - price)**2)
+    TSS = np.sum((np.mean(price) - price) ** 2)
 
     # Compute and return the coefficient R²
     return 1 - (float(RSS) / float(TSS))
